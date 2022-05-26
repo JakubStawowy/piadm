@@ -10,20 +10,15 @@ from skimage.measure import label, regionprops
 from skimage.util import invert
 from scipy.spatial.distance import euclidean
 
-
-def run(file_path):
-    # read the image and convert it to grayscale
-    # car = imread('./img/aaa.JPG')
-    car = imread(file_path)
-    gray_img = rgb2gray(car)
-
-    # blur the image to remove any noise
+def blur_fun(gray_img):
     blurred_gray_img = gaussian(gray_img)
     plt.figure(figsize=(20, 20))
     plt.axis("off")
     plt.imshow(blurred_gray_img, cmap="gray")
     plt.show()
+    return blurred_gray_img
 
+def thresh_fun(gray_img):
     thresh = threshold_otsu(gray_img)
     print(thresh)
     thresh = 0.46
@@ -33,9 +28,9 @@ def run(file_path):
     plt.axis("off")
     plt.imshow(binary, cmap="gray")
     plt.show()
+    return binary
 
-    label_image = label(binary, connectivity=2)
-
+def find_plate(binary, label_image):
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.axis("off")
     ax.imshow(binary, cmap="gray")
@@ -49,6 +44,7 @@ def run(file_path):
     plt.tight_layout()
     plt.show()
 
+def text_like_regions(blurred_gray_img, label_image):
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.imshow(blurred_gray_img, cmap="gray")
 
@@ -84,10 +80,13 @@ def run(file_path):
 
     plt.tight_layout()
     plt.show()
+    all_points = np.array(all_points)
+    all_points = all_points[all_points[:, 1].argsort()]
+    return all_points
 
-    # find the angle between the three points A,B,C
-    # Angle between line BA and BC
-    def angle_between_three_points(pointA, pointB, pointC):
+# find the angle between the three points A,B,C
+# Angle between line BA and BC
+def angle_between_three_points(pointA, pointB, pointC):
         BA = pointA - pointB
         BC = pointC - pointB
 
@@ -100,9 +99,7 @@ def run(file_path):
 
         return np.degrees(angle)
 
-    all_points = np.array(all_points)
-
-    all_points = all_points[all_points[:, 1].argsort()]
+def final_coordinates(blurred_gray_img, all_points):
     height, width = blurred_gray_img.shape
     groups = []
     for p in all_points:

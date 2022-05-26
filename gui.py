@@ -4,12 +4,22 @@ from PIL import ImageTk, Image
 from test import *
 
 
-def search_file():
+def open_file_and_find_plate():
+    # open file
     Tk().withdraw()
     filename = askopenfilename()
-    print(filename)
-    # Rozbić na funkcje i odpalić w tym miejscu cały algorytm
-    run(filename)
+    car = imread(filename)
+
+    # find plate
+    
+    gray_img = rgb2gray(car)
+    # blur the image to remove any noise
+    blurred_gray_img = blur_fun(gray_img)
+    binary = thresh_fun(gray_img)
+    label_image = label(binary, connectivity=2)
+    find_plate(binary, label_image)
+    all_points = text_like_regions(blurred_gray_img, label_image)
+    final_coordinates(blurred_gray_img, all_points)
 
 
 class MyWindow:
@@ -27,6 +37,6 @@ class MyWindow:
         self.lbl.place(x=75, y=75, width=250)
         self.lbl.configure(foreground="white", background="black")
 
-        self.search = Button(root, text='Search', command=search_file, background="black", foreground="white")
+        self.search = Button(root, text='Search', command=open_file_and_find_plate, background="black", foreground="white")
         self.search.place(x=150, y=100, w=100, h=50)
 
